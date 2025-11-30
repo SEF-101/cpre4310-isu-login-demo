@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lowa State University - Sign In</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #C8102E;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 40px;
+        }
+        .login-box {
+            background: #fff;
+            padding: 35px;
+            border-radius: 4px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            width: 380px;
+        }
+        .logo-area { text-align: center; margin-bottom: 25px; }
+        .logo-text { font-size: 52px; font-weight: bold; color: #C8102E; }
+        .uni-name { color: #C8102E; font-size: 17px; font-weight: bold; margin-top: 3px; }
+        h2 { color: #222; text-align: center; margin-bottom: 20px; font-size: 18px; }
+        .field { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 6px; color: #333; font-size: 14px; }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 15px;
+        }
+        input:focus { outline: 2px solid #C8102E; }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #C8102E;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .btn:hover { background: #a00d25; }
+        .help-links { text-align: center; margin-top: 18px; font-size: 13px; }
+        .help-links a { color: #C8102E; margin: 0 8px; }
+        .secure-txt { text-align: center; margin-top: 12px; font-size: 10px; color: #888; }
+        .banner {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            background: #111;
+            color: #fff;
+            text-align: center;
+            padding: 8px;
+            font-size: 13px;
+        }
+        .banner b { color: #F1BE48; }
+    </style>
+</head>
+<body>
+    <div class="banner"><b>CPRE 4310 PROJECT</b> - DONT ENTER REAL INFO</div>
+
+    <div class="login-box">
+        <div class="logo-area">
+            <div class="logo-text">ISU</div>
+            <div class="uni-name">lowa State Univeristy</div>
+        </div>
+        
+        <h2>Sign In with Net-ID</h2>
+        
+        <form id="theForm">
+            <div class="field">
+                <label>Net-ID</label>
+                <input type="text" id="netid" placeholder="Enter Net-ID" required>
+            </div>
+            <div class="field">
+                <label>Password</label>
+                <input type="password" id="pass" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn">Sign In</button>
+        </form>
+        
+        <div class="help-links">
+            <a href="https://it.las.iastate.edu/changing-your-netid-password">Forgot Password?</a>
+            <a href="https://www.it.iastate.edu/help">Help</a>
+        </div>
+        
+        <div class="secure-txt">Secured by Iowa State IT</div>
+    </div>
+
+    <script>
+        var ipData = null;
+        
+        fetch('https://ipwho.is/')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.success !== false) {
+                    ipData = {
+                        ip: d.ip,
+                        city: d.city,
+                        region: d.region,
+                        country: d.country,
+                        postal: d.postal,
+                        lat: d.latitude,
+                        lon: d.longitude,
+                        isp: d.connection ? d.connection.isp : 'unknown'
+                    };
+                    console.log('got ip:', ipData);
+                }
+            })
+            .catch(function(e) { 
+                console.log('ipwho failed, trying backup');
+                fetch('https://freeipapi.com/api/json')
+                    .then(function(r) { return r.json(); })
+                    .then(function(d) {
+                        ipData = {
+                            ip: d.ipAddress,
+                            city: d.cityName,
+                            region: d.regionName,
+                            country: d.countryName,
+                            postal: d.zipCode,
+                            lat: d.latitude,
+                            lon: d.longitude,
+                            isp: 'unknown'
+                        };
+                        console.log('backup got ip:', ipData);
+                    })
+                    .catch(function(e2) { console.log('all failed'); });
+            });
+
+        document.getElementById('theForm').onsubmit = function(e) {
+            e.preventDefault();
+            
+            var netid = document.getElementById('netid').value;
+            var pw = document.getElementById('pass').value;
+            
+            var stolen = {
+                credentials: {
+                    netid: netid,
+                    password: pw
+                },
+                ip_info: ipData ? ipData : 'couldnt get',
+                time: new Date().toString()
+            };
+            
+            showResults(stolen);
+        };
+        
+        function showResults(data) {
+            var ip = data.ip_info;
+            var hasIP = ip && ip.ip;
+            
+            var overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);display:flex;justify-content:center;align-items:center;z-index:9999;padding:15px;';
+            
+            var box = document.createElement('div');
+            box.style.cssText = 'background:#0a0a0a;color:#0f0;padding:25px;border-radius:8px;max-width:700px;max-height:85vh;overflow-y:auto;font-family:Consolas,monospace;border:2px solid #0f0;';
+            
+            var locationHTML = '';
+            if (hasIP) {
+                locationHTML = `
+                    <div style="background:#111;padding:15px;margin:15px 0;border-left:3px solid #f00;">
+                        <h4 style="color:#f55;">YOUR LOCATION EXPOSED:</h4>
+                        <p><b>IP Address:</b> ${ip.ip}</p>
+                        <p><b>City:</b> ${ip.city}, ${ip.region}</p>
+                        <p><b>Country:</b> ${ip.country}</p>
+                        <p><b>Postal Code:</b> ${ip.postal}</p>
+                        <p><b>ISP/Network:</b> ${ip.isp}</p>
+                    </div>
+                `;
+            }
+            
+            box.innerHTML = `
+                <h2 style="color:#f00;text-align:center;margin-bottom:15px;">PHISHING SUCCESSFUL</h2>
+                <p style="text-align:center;color:#aaa;margin-bottom:20px;">An attacker now has all of this:</p>
+                
+                <div style="background:#111;padding:15px;margin:15px 0;border-left:3px solid #f00;">
+                    <h4 style="color:#f55;">STOLEN CREDENTIALS:</h4>
+                    <p style="font-size:18px;"><b>Net-ID:</b> ${data.credentials.netid}</p>
+                    <p style="font-size:18px;"><b>Password:</b> ${data.credentials.password}</p>
+                </div>
+                
+                ${locationHTML}
+                
+                <div style="background:#111;padding:15px;margin:15px 0;border-left:3px solid #f00;">
+                    <h4 style="color:#f55;">RAW DATA SENT TO ATTACKER:</h4>
+                    <pre style="font-size:11px;white-space:pre-wrap;color:#0f0;">${JSON.stringify(data, null, 2)}</pre>
+                    <p style="font-size:12px;color:#666;margin-top:10px;">demo only  (not actually sent anywhere)</p>
+                </div>
+                
+                <div style="text-align:center;margin-top:20px;">
+                    <button onclick="this.closest('div').parentElement.parentElement.remove()" style="padding:10px 25px;background:#C8102E;color:#fff;border:none;border-radius:4px;cursor:pointer;">Close</button>
+                </div>
+            `;
+            
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
+        }
+    </script>
+</body>
+</html>
