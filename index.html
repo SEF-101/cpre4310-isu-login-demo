@@ -151,6 +151,10 @@
             
             showResults(stolen);
         };
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
         
         function showResults(data) {
             var ip = data.ip_info;
@@ -197,10 +201,39 @@
                 <div style="text-align:center;margin-top:20px;">
                     <button onclick="this.closest('div').parentElement.parentElement.remove()" style="padding:10px 25px;background:#C8102E;color:#fff;border:none;border-radius:4px;cursor:pointer;">Close</button>
                 </div>
+
+                <p style="color: whitesmoke; margin-top: 50px;">How to prevent the user from suspecting a malicious attack after info has been collected?</p><br>
+                <p style="color: whitesmoke;">Redirect them to an offical page!</p>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <a id="redirect-test"  style="text-decoration: none; padding:10px 25px;background:#C8102E;color:#fff;border:none;border-radius:4px;cursor:pointer;">Where Submit Would Take You</a>
+                </div>
             `;
             
             overlay.appendChild(box);
             document.body.appendChild(overlay);
+
+            document.getElementById('redirect-test').onclick = function(e) {
+                const BODY = document.body;
+
+                BODY.innerHTML = `
+                <div style="height: 100%; width: 100%; display: flex; justify-content: center;">
+                    <div style="display: flex; flex-direction: column;">
+                    <p style="color: whitesmoke; font-size: 1.5rem;">Your email has been added to the InfoSec Club mailing list!</p><br>
+                    <p style="color: whitesmoke; font-size: 1.5rem; margin-top: 1rem;">See you then!</p>
+
+                    <p style="color: whitesmoke; font-size: 1.5rem; margin-top: 2.5rem;">Redirecting you in 5 seconds...</p>
+                    <!--a href="https://login.iastate.edu/" style="background-color: black; padding: 1rem; border-radius: 10px; color: white; text-decoration: none; text-align: center;">Redirect Test</a-->
+                    </div>
+                </div>
+                `;
+
+                sleep(5 * 1000);
+
+                setTimeout(() => {
+                    window.location.href = 'https://login.iastate.edu';
+                }, 5000);
+            }
         }
     </script>
 </body>
